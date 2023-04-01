@@ -1,24 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./style.css";
 import Card from "../../components/Card";
 
 export default function Home() {
 
     const [studentName, setStudentName] = useState()
+    const [students, setStudents] = useState([]);
+    const [user, setUser] = useState({ name: '', avatar: '' })
+
+
+    function handleAddStudent() {
+        const newStudent = {
+            name: studentName,
+            time: new Date().toLocaleDateString('pt-br', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            })
+        }
+        setStudents(prevState => [...prevState, newStudent])
+    }
+
+    useEffect(() => {
+        fetch('https://api.github.com/users/hallan-n')
+            .then(response => response.json())
+            .then(data => {
+                setUser({
+                    name: data.name,
+                    avatar: data.avatar_url,
+                })
+            })
+    }, [students])
 
     return (
         <div className="container">
-            <h1>Name: {studentName}</h1>
-            <input
+            <header>
+                <h1>Lista de presença</h1>
+                <div>
+                    <strong>{user.name}</strong>
+                    <img src={user.avatar} />
+                </div>
+            </header>
+            <input required
                 type="text"
                 placeholder="Digite o nome..."
                 onChange={(e) => setStudentName(e.target.value)}
             />
-            <button type="button">Adicionar</button>
+            <button onClick={handleAddStudent} type="button">Adicionar</button>
 
-            <Card name="João" time="15:35:20" />
-            <Card name="Hállan" time="16:35:20" />
-            <Card name="Mara" time="18:35:20" />
+            {
+                students.map(student => <Card name={student.name} time={student.time} key={student.time} />)
+            }
+
         </div>
     );
 }
